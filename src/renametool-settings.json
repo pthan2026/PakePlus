@@ -1,0 +1,42 @@
+{
+  "rt_view_mode": "quick",
+  "rt_rule": {
+    "id": "rule_default",
+    "name": "默认标准格式",
+    "tokens": [
+      { "type": "date", "enabled": true },
+      { "type": "docType", "enabled": true, "prefixWrapper": "【", "suffixWrapper": "】" },
+      { "type": "name", "enabled": true },
+      { "type": "status", "enabled": false, "prefixWrapper": "【", "suffixWrapper": "】" },
+      { "type": "version", "enabled": false, "prefixWrapper": "V" }
+    ],
+    "separator": "_",
+    "dateFormat": "YYYYMMDD",
+    "includeExtension": true,
+    "customPrefix": "",
+    "customSuffix": "",
+    "autoNumbering": false,
+    "numberPadding": 2
+  },
+  "rt_status_tags": [
+    { "id": "draft", "label": "草稿", "color": "gray", "isDefault": true },
+    { "id": "pending", "label": "待审核", "color": "amber", "isDefault": true },
+    { "id": "reviewing", "label": "审核中", "color": "purple", "isDefault": true },
+    { "id": "final", "label": "定稿", "color": "blue", "isDefault": true },
+    { "id": "stamped", "label": "已盖章", "color": "rose", "isDefault": true },
+    { "id": "archived", "label": "归档", "color": "emerald", "isDefault": true }
+  ],
+  "rt_doc_type_tags": [
+    { "id": "type_layout", "label": "方案布局图", "color": "blue", "isDefault": true },
+    { "id": "type_ppt", "label": "方案说明PPT", "color": "amber", "isDefault": true },
+    { "id": "type_tech_bid", "label": "技术标文件", "color": "purple", "isDefault": true },
+    { "id": "type_tech_protocol", "label": "技术协议", "color": "indigo", "isDefault": true },
+    { "id": "type_doc_desc", "label": "方案说明文档", "color": "cyan", "isDefault": true },
+    { "id": "type_equipment", "label": "设备清单", "color": "emerald", "isDefault": true },
+    { "id": "type_quote_list", "label": "报价清单", "color": "teal", "isDefault": true },
+    { "id": "type_inquiry_data", "label": "询价资料", "color": "rose", "isDefault": true },
+    { "id": "type_ref_doc", "label": "参考文件", "color": "gray", "isDefault": true },
+    { "id": "type_inquiry_drawing", "label": "询价图纸", "color": "orange", "isDefault": true }
+  ],
+  "rt_history": []
+}
