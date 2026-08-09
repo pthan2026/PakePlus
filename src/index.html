@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>规范文件重命名工具</title>
+    <meta name="theme-color" content="#2563eb" />
+    <!-- localStorage Polyfill: 当原生 localStorage 不可用时（Pake/Tauri/WebView2），
+         自动切换为 IndexedDB 模拟的 localStorage，保证持久化数据不丢失 -->
+    <script>
+      (function () {
+        var isWorking = true;
+        try {
+          var testKey = '__ls_test__';
+          window.localStorage.setItem(testKey, '1');
+          window.localStorage.removeItem(testKey);
+        } catch (e) {
+          isWorking = false;
+        }
+
+        if (!isWorking) {
+          console.warn('[Renametool] 原生 localStorage 不可用，启用 IndexedDB 持久化垫片');
+
+          var memoryStore = {};
+          var db = null;
+          var initQueue = [];
+
+          var request = indexedDB.open('RenametoolLS', 1);
+          request.onupgradeneeded = function (e) {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains('store')) {
+              db.createObjectStore('store');
+            }
+          };
+          request.onsuccess = function (e) {
+            db = e.target.result;
+            var tx = db.transaction('store', 'readonly');
+            var store = tx.objectStore('store');
+            var keysReq = store.getAllKeys();
+            var valsReq = store.getAll();
+            keysReq.onsuccess = function () {
+              valsReq.onsuccess = function () {
+                var keys = keysReq.result;
+                var vals = valsReq.result;
+                for (var i = 0; i < keys.length; i++) {
+                  memoryStore[keys[i]] = vals[i];
+                }
+                // Flush queued writes
+                for (var j = 0; j < initQueue.length; j++) {
+                  var item = initQueue[j];
+                  if (item.val === null) {
+                    delete memoryStore[item.key];
+                    db.transaction('store', 'readwrite').objectStore('store').delete(item.key);
+                  } else {
+                    memoryStore[item.key] = item.val;
+                    db.transaction('store', 'readwrite').objectStore('store').put(item.val, item.key);
+                  }
+                }
+                initQueue = [];
+              };
+            };
+          };
+          request.onerror = function () {
+            console.warn('[Renametool] IndexedDB 不可用，回退为内存存储（无持久化）');
+          };
+
+          var saveToDB = function (key, val) {
+            if (!db) {
+              initQueue.push({ key: key, val: String(val) });
+              return;
+            }
+            try {
+              var tx = db.transaction('store', 'readwrite');
+              tx.objectStore('store').put(String(val), key);
+            } catch (e) { /* ignore */ }
+          };
+
+          var removeFromDB = function (key) {
+            if (!db) {
+              initQueue.push({ key: key, val: null });
+              return;
+            }
+            try {
+              db.transaction('store', 'readwrite').objectStore('store').delete(key);
+            } catch (e) { /* ignore */ }
+          };
+
+          var mockLS = {
+            getItem: function (key) {
+              return memoryStore.hasOwnProperty(key) ? memoryStore[key] : null;
+            },
+            setItem: function (key, val) {
+              memoryStore[key] = String(val);
+              saveToDB(key, String(val));
+            },
+            removeItem: function (key) {
+              delete memoryStore[key];
+              removeFromDB(key);
+            },
+            clear: function () {
+              var ks = Object.keys(memoryStore);
+              for (var i = 0; i < ks.length; i++) {
+                delete memoryStore[ks[i]];
+              }
+              if (db) {
+                try { db.transaction('store', 'readwrite').objectStore('store').clear(); } catch (e) {}
+              }
+            },
+            key: function (index) {
+              var ks = Object.keys(memoryStore);
+              return index < ks.length ? ks[index] : null;
+            },
+            get length() {
+              return Object.keys(memoryStore).length;
+            }
+          };
+
+          Object.defineProperty(window, 'localStorage', {
+            value: mockLS,
+            writable: false,
+            configurable: true
+          });
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-BujVmBxR.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D67SGTle.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
